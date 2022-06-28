@@ -71,13 +71,22 @@
     dest: '{{ broker_dir }}/{{ broker_name }}/etc/jolokia-access.xml'
     mode: '0644'
 
-- name: Open broker port
+- name: Open broker console port
   ansible.posix.firewalld:
     zone: public
     port: 8161/tcp
     permanent: yes
     immediate: yes
     state: enabled
+
+- name: Open broker ports
+  ansible.posix.firewalld:
+    zone: public
+    port: "{{ item }}"
+    permanent: yes
+    immediate: yes
+    state: enabled
+  loop: "{{ broker_ports }}"
 
 - name: Start broker service
   ansible.builtin.command: '{{ broker_dir }}/{{ broker_name }}/bin/artemis-service start'
