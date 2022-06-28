@@ -23,7 +23,7 @@
 
    <!-- artemis.URI.instance is parsed from artemis.instance by the CLI startup.
         This is to avoid situations where you could have spaces or special characters on this URI -->
-   <server configuration="file:/var/lib/activemq_brokers/broker1/etc//broker.xml"/>
+   <server configuration="file:/var/lib/activemq_brokers/{{ broker_name }}/etc/broker.xml"/>
 
    <!-- The web server is only bound to localhost by default -->
    <web path="web">
