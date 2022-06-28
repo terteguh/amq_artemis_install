@@ -1,0 +1,23 @@
+all:
+  hosts: 
+    192.168.1.1:
+    192.168.1.2:
+  
+  vars:
+    ansible_user: <broker host user>
+    ansible_password: <broker host password>
+    ansible_become: yes
+    ansible_become_password: <broker host sudo password>
+
+    java_package: java-11-openjdk.x86_64
+
+    artemis_version: 2.22.0
+    artemis_tar_name: 'apache-artemis-{{ artemis_version }}-bin.tar.gz'
+    artemis_install_dir_name: 'apache-artemis-{{ artemis_version }}'
+    artemis_install_path: <artemis installation files dir>
+    artemis_dir: <artemis files dir>
+
+    broker_dir: <broker folder>
+    broker_name: <broker name>
+    broker_user: <broker user>
+    broker_password: <broker password>

@@ -1,0 +1,83 @@
+---
+- name: Install java
+  yum:
+    name: '{{ java_package }}'
+    state: latest
+
+- name: Create group artemis
+  ansible.builtin.group:
+    name: artemis
+    state: present
+
+- name: Create user artemis
+  ansible.builtin.user:
+    name: artemis
+    shell: /bin/false
+    groups: artemis
+
+- name: Extract artemis tar
+  ansible.builtin.unarchive:
+    src: '{{ artemis_tar_name }}'
+    dest: '{{ artemis_install_path }}'
+
+- name: Copy tar files to artemis directory
+  ansible.builtin.copy:
+    src: '{{ artemis_install_path }}/{{ artemis_install_dir_name }}/'
+    dest: '{{ artemis_dir }}/'
+    remote_src: yes
+
+- name: Recursively remove unarchived amq directory
+  ansible.builtin.file:
+    path: '{{ artemis_install_path }}/{{ artemis_install_dir_name }}'
+    state: absent
+
+- name: Recursively change ownership of the artemis directory
+  ansible.builtin.file:
+    path: '{{ artemis_dir }}'
+    state: directory
+    recurse: yes
+    owner: artemis
+    group: artemis
+
+- name: Recursively change permission to exec artemis /bin directory
+  ansible.builtin.file:
+    path: '{{ artemis_dir }}/bin'
+    state: directory
+    recurse: yes
+    mode: o+x
+
+- name: Create a broker directory if it does not exist
+  ansible.builtin.file:
+    path: '{{ broker_dir }}'
+    state: directory
+    mode: '0755'
+
+- name: Create broker
+  ansible.builtin.command: > 
+    {{ artemis_dir }}/bin/artemis create {{ broker_dir }}/{{ broker_name }} 
+    --user {{ broker_user }}
+    --password {{ broker_password }}
+    --require-login
+
+- name: Template a bootstrap config file
+  ansible.builtin.template:
+    src: bootstrap.xml.j2
+    dest: '{{ broker_dir }}/{{ broker_name }}/etc/bootstrap.xml'
+    mode: '0644'
+
+- name: Template a jolokia config file
+  ansible.builtin.template:
+    src: jolokia-access.xml.j2
+    dest: '{{ broker_dir }}/{{ broker_name }}/etc/jolokia-access.xml'
+    mode: '0644'
+
+- name: Open broker port
+  ansible.posix.firewalld:
+    zone: public
+    port: 8161/tcp
+    permanent: yes
+    immediate: yes
+    state: enabled
+
+- name: Start broker service
+  ansible.builtin.command: '{{ broker_dir }}/{{ broker_name }}/bin/artemis-service start'
