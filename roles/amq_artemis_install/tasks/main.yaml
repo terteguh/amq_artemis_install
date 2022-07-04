@@ -71,13 +71,13 @@
     dest: '{{ broker_dir }}/{{ broker_name }}/etc/jolokia-access.xml'
     mode: '0644'
 
-- name: Open broker console port
-  ansible.posix.firewalld:
-    zone: public
-    port: 8161/tcp
-    permanent: yes
-    immediate: yes
-    state: enabled
+
+- name: Template a broker config file
+  ansible.builtin.template:
+    src: broker.xml.j2
+    dest: '{{ broker_dir }}/{{ broker_name }}/etc/broker.xml'
+    mode: '0644'
+
 
 - name: Open broker ports
   ansible.posix.firewalld:
@@ -88,5 +88,43 @@
     state: enabled
   loop: "{{ broker_ports }}"
 
-- name: Start broker service
-  ansible.builtin.command: '{{ broker_dir }}/{{ broker_name }}/bin/artemis-service start'
+
+- name: Disable SELinux
+  selinux:
+    policy: targeted
+    state: permissive
+
+- name: Reboot host and wait for it to restart
+  reboot:
+    msg: "Reboot initiated by Ansible"
+    connect_timeout: 5
+    reboot_timeout: 600
+    pre_reboot_delay: 0
+    post_reboot_delay: 30
+    test_command: whoami
+
+
+- name: Recursively change ownership of the broker directory
+  ansible.builtin.file:
+    path: '{{ broker_dir }}/{{ broker_name }}'
+    state: directory
+    recurse: yes
+    owner: artemis
+    group: artemis
+
+
+- name: Template artemis service file
+  ansible.builtin.template:
+    src: artemis.service.j2
+    dest: '/etc/systemd/system/artemis.service'
+    mode: '0644'
+
+- name: Force systemd to reread configs
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+- name: Start and enable artemis service
+  ansible.builtin.systemd:
+    state: started
+    enabled: yes
+    name: artemis
