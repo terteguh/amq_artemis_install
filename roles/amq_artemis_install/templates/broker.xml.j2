@@ -26,7 +26,7 @@ under the License.
    <core xmlns="urn:activemq:core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="urn:activemq:core ">
 
-      <name>artemis-master</name>
+      <name>{{ broker_name }}</name>
 
 
       <persistence-enabled>true</persistence-enabled>
@@ -38,13 +38,13 @@ under the License.
        -->
       <journal-type>ASYNCIO</journal-type>
 
-      <paging-directory>data/paging</paging-directory>
+      <paging-directory>{{ broker_persistance_folder }}/paging</paging-directory>
 
-      <bindings-directory>data/bindings</bindings-directory>
+      <bindings-directory>{{ broker_persistance_folder }}/bindings</bindings-directory>
 
-      <journal-directory>data/journal</journal-directory>
+      <journal-directory>{{ broker_persistance_folder }}/journal</journal-directory>
 
-      <large-messages-directory>data/large-messages</large-messages-directory>
+      <large-messages-directory>{{ broker_persistance_folder }}/large-messages</large-messages-directory>
 
       <journal-datasync>true</journal-datasync>
 
@@ -103,6 +103,59 @@ under the License.
          <acceptor name="netty-acceptor">tcp://{{ ansible_ssh_host }}:61616</acceptor>
        </acceptors>
 
+{% if cluster%}
+
+          <!-- Clustering configuration -->
+       <broadcast-groups>
+         <broadcast-group name="Artemis-broadcast-group">
+           <local-bind-address>{{ ansible_ssh_host }}</local-bind-address>
+           <local-bind-port>5433</local-bind-port>   
+           <group-address>231.7.7.7</group-address>
+           <group-port>9876</group-port>
+           <broadcast-period>100</broadcast-period>
+           <connector-ref>netty-connector</connector-ref>
+         </broadcast-group>
+       </broadcast-groups>
+
+       <discovery-groups>
+         <discovery-group name="Artemis-discovery-group">
+           <local-bind-address>{{ ansible_ssh_host }}</local-bind-address>
+           <group-address>231.7.7.7</group-address>
+           <group-port>9876</group-port>
+           <refresh-timeout>10000</refresh-timeout>
+         </discovery-group>
+       </discovery-groups>
+
+<!-- This is a symmetric cluster -->
+
+       <cluster-connections>
+         <cluster-connection name="Artemis-Cluster">
+           <address></address>
+           <connector-ref>netty-connector</connector-ref>
+           <check-period>1000</check-period>
+           <connection-ttl>5000</connection-ttl>
+           <min-large-message-size>50000</min-large-message-size>
+           <call-timeout>5000</call-timeout>
+           <retry-interval>500</retry-interval>
+           <retry-interval-multiplier>1.0</retry-interval-multiplier>
+           <max-retry-interval>5000</max-retry-interval>
+           <initial-connect-attempts>-1</initial-connect-attempts>
+           <reconnect-attempts>-1</reconnect-attempts>
+           <use-duplicate-detection>true</use-duplicate-detection>
+           <message-load-balancing>ON_DEMAND</message-load-balancing>
+           <max-hops>1</max-hops>
+           <confirmation-window-size>32000</confirmation-window-size>
+           <call-failover-timeout>30000</call-failover-timeout>
+           <notification-interval>1000</notification-interval>
+           <notification-attempts>2</notification-attempts>
+           <discovery-group-ref discovery-group-name="Artemis-discovery-group"/>
+         </cluster-connection>
+       </cluster-connections>
+
+       <cluster-user>{{ cluster_user }}</cluster-user>
+       <cluster-password>{{ cluster_password }}</cluster-password>
+
+{% endif %}
 
        <security-settings>
          <security-setting match="#">
@@ -165,6 +218,27 @@ under the License.
 
       </addresses>
 
+{% if jdbc_persistance %}
+<store>
+
+         <database-store>
+            <data-source-properties>
+              <data-source-property key="driverClassName" value="org.postgresql.Driver" />
+              <data-source-property key="url" value="{{ jdbc_connection_url }}" />
+              <data-source-property key="username" value="{{ jdbc_user }}" />
+              <data-source-property key="password" value="{{ jdbc_password }}" />
+              <data-source-property key="poolPreparedStatements" value="false" />
+            </data-source-properties>
+            <bindings-table-name>{{ bindings_table_name }}</bindings-table-name>
+            <message-table-name>{{ message_table_name }}</message-table-name>
+            <large-message-table-name>{{ large_message_table_name }}</large-message-table-name>
+            <page-store-table-name>{{ page_table_name }}</page-store-table-name>
+            <jdbc-driver-class-name></jdbc-driver-class-name>
+         </database-store>
+
+</store>
+{% endif %}
+
 
       <!-- Uncomment the following if you want to use the Standard LoggingActiveMQServerPlugin pluging to log in events
       <broker-plugins>
@@ -179,6 +253,15 @@ under the License.
          </broker-plugin>
       </broker-plugins>
       -->
+
+{% if cluster and ha %}
+      <ha-policy>
+       <{{ ha_type }}>
+          <{{ ha_role }}/>
+       </{{ ha_type }}>
+      </ha-policy>
+{% endif %}
+
 
    </core>
 </configuration>

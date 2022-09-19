@@ -22,13 +22,13 @@
 
 - name: Copy tar files to artemis directory
   ansible.builtin.copy:
-    src: '{{ artemis_install_path }}/{{ artemis_install_dir_name }}/'
+    src: '{{ artemis_install_path }}/apache-artemis-{{ artemis_version }}/'
     dest: '{{ artemis_dir }}/'
     remote_src: yes
 
 - name: Recursively remove unarchived amq directory
   ansible.builtin.file:
-    path: '{{ artemis_install_path }}/{{ artemis_install_dir_name }}'
+    path: '{{ artemis_install_path }}/apache-artemis-{{ artemis_version }}'
     state: absent
 
 - name: Recursively change ownership of the artemis directory
@@ -58,6 +58,13 @@
     --user {{ broker_user }}
     --password {{ broker_password }}
     --require-login
+    --force
+
+- name: Copy jdbc driver file
+  ansible.builtin.copy:
+    src: "{{ jdbc_driver_file_name }}"
+    dest: '{{ broker_dir }}/{{ broker_name }}/lib/'
+
 
 - name: Template a bootstrap config file
   ansible.builtin.template:
@@ -88,6 +95,11 @@
     state: enabled
   loop: "{{ broker_ports }}"
 
+# - name: Stop firewalld
+#   ansible.builtin.systemd:
+#     state: stopped
+#     enabled: no
+#     name: firewalld
 
 - name: Disable SELinux
   selinux:
