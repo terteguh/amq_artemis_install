@@ -19,6 +19,7 @@ all:
     artemis_install_dir_name: 'apache-artemis-{{ artemis_version }}'
     artemis_install_path: /opt/artemis-install
     artemis_dir: /opt/artemis-dir
+    broker_persistance_folder: /data
 
     broker_dir: /var/lib/artemisbrokerdir
     broker_name: artemisnode
