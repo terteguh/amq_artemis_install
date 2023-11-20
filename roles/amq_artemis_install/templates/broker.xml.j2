@@ -95,12 +95,12 @@ under the License.
        <!-- Connectors -->
 
        <connectors>
-         <connector name="netty-connector">tcp://{{ ansible_ssh_host }}:61616</connector>
+         <connector name="netty-connector">tcp://{{ ansible_host }}:61616</connector>
        </connectors>       
 
        <!-- Acceptors -->
        <acceptors>
-         <acceptor name="netty-acceptor">tcp://{{ ansible_ssh_host }}:61616</acceptor>
+         <acceptor name="netty-acceptor">tcp://{{ ansible_host }}:61616</acceptor>
        </acceptors>
 
 {% if cluster%}
@@ -108,7 +108,7 @@ under the License.
           <!-- Clustering configuration -->
        <broadcast-groups>
          <broadcast-group name="Artemis-broadcast-group">
-           <local-bind-address>{{ ansible_ssh_host }}</local-bind-address>
+           <local-bind-address>{{ ansible_host }}</local-bind-address>
            <local-bind-port>5433</local-bind-port>   
            <group-address>231.7.7.7</group-address>
            <group-port>9876</group-port>
@@ -119,7 +119,7 @@ under the License.
 
        <discovery-groups>
          <discovery-group name="Artemis-discovery-group">
-           <local-bind-address>{{ ansible_ssh_host }}</local-bind-address>
+           <local-bind-address>{{ ansible_host }}</local-bind-address>
            <group-address>231.7.7.7</group-address>
            <group-port>9876</group-port>
            <refresh-timeout>10000</refresh-timeout>
