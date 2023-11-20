@@ -1,0 +1,24 @@
+all:
+  hosts: 
+    10.64.27.51:
+    10.64.27.52:
+    10.64.27.53:
+  
+  vars:
+    ansible_user: ansible
+    ansible_password: ansible
+    ansible_become: yes
+    # ansible_become_password: root
+
+    java_package: java-11-openjdk.x86_64
+
+    artemis_version: 2.24.0
+    artemis_tar_name: 'apache-artemis-{{ artemis_version }}-bin.tar.gz'
+    artemis_install_dir_name: 'apache-artemis-{{ artemis_version }}'
+    artemis_install_path: /opt/artemis-install
+    artemis_dir: /opt/artemis-dir
+
+    broker_dir: /var/lib/artemisbrokerdir
+    broker_name: artemisnode
+    broker_user: artemis
+    broker_password: 4MQArt3m1s
