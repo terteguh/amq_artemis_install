@@ -20,9 +20,9 @@ all:
     artemis_install_path: /opt/artemis-install
     artemis_dir: /opt/artemis-dir
     broker_persistance_folder: /data
-    cluster: true
-    cluster_user: admin
-    cluster_password: admincluster
+    cluster: false
+    # cluster_user: admin
+    # cluster_password: admincluster
     ha: true
     ha_type: replication
     ha_role: slave
