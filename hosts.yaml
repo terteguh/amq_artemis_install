@@ -26,6 +26,7 @@ all:
     ha: true
     ha_type: replication
     ha_role: slave
+    jdbc_persistance: false
 
     broker_dir: /var/lib/artemisbrokerdir
     broker_name: artemisnode
