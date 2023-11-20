@@ -60,10 +60,10 @@
     --require-login
     --force
 
-- name: Copy jdbc driver file
-  ansible.builtin.copy:
-    src: "{{ jdbc_driver_file_name }}"
-    dest: '{{ broker_dir }}/{{ broker_name }}/lib/'
+# - name: Copy jdbc driver file
+#   ansible.builtin.copy:
+#     src: "{{ jdbc_driver_file_name }}"
+#     dest: '{{ broker_dir }}/{{ broker_name }}/lib/'
 
 
 - name: Template a bootstrap config file
